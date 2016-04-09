@@ -1,0 +1,14 @@
+{
+  "name": "serverless-private-npm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Grenier <michael.grenier@live.com>",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.3.2"
+  }
+}

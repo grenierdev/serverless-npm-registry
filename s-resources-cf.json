@@ -1,0 +1,136 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "The AWS CloudFormation template for this Serverless application's resources outside of Lambdas and Api Gateway",
+	"Resources": {
+		"IamRoleLambda": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {
+								"Service": [
+									"lambda.amazonaws.com"
+								]
+							},
+							"Action": [
+								"sts:AssumeRole"
+							]
+						}
+					]
+				},
+				"Path": "/"
+			}
+		},
+		"IamPolicyLambda": {
+			"Type": "AWS::IAM::Policy",
+			"Properties": {
+				"PolicyName": "${stage}-${project}-lambda",
+				"PolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Action": [
+								"logs:CreateLogGroup",
+								"logs:CreateLogStream",
+								"logs:PutLogEvents"
+							],
+							"Resource": "arn:aws:logs:${region}:*:*"
+						},
+						{
+							"Effect": "Allow",
+							"Action": [
+								"*"
+							],
+							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-licenses-${stage}"
+						},
+						{
+							"Effect": "Allow",
+							"Action": [
+								"*"
+							],
+							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-packages-${stage}"
+						},
+						{
+							"Effect": "Allow",
+							"Action": [
+								"*"
+							],
+							"Resource": "arn:aws:s3:::${project}-packages-${stage}"
+						}
+					]
+				},
+				"Roles": [
+					{
+						"Ref": "IamRoleLambda"
+					}
+				]
+			}
+		},
+		"DynamoDBTableLicense": {
+			"Type": "AWS::DynamoDB::Table",
+			"Properties": {
+				"TableName": "${project}-licenses-${stage}",
+				"AttributeDefinitions": [
+					{
+						"AttributeName": "name",
+						"AttributeType": "S"
+					}
+				],
+				"KeySchema": [
+					{
+						"AttributeName": "name",
+						"KeyType": "HASH"
+					}
+				],
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 1,
+					"WriteCapacityUnits": 1
+				}
+			}
+		},
+		"DynamoDBTablePackage": {
+			"Type": "AWS::DynamoDB::Table",
+			"Properties": {
+				"TableName": "${project}-packages-${stage}",
+				"AttributeDefinitions": [
+					{
+						"AttributeName": "name",
+						"AttributeType": "S"
+					}
+				],
+				"KeySchema": [
+					{
+						"AttributeName": "name",
+						"KeyType": "HASH"
+					}
+				],
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 1,
+					"WriteCapacityUnits": 1
+				}
+			}
+		},
+		"S3BucketPackage": {
+			"Type": "AWS::S3::Bucket",
+			"Properties": {
+				"BucketName": "${project}-packages-${stage}",
+				"AccessControl": "Private"
+			}
+		}
+	},
+	"Outputs": {
+		"IamRoleArnLambda": {
+			"Description": "ARN of the lambda IAM role",
+			"Value": {
+				"Fn::GetAtt": [
+					"IamRoleLambda",
+					"Arn"
+				]
+			}
+		}
+	}
+}

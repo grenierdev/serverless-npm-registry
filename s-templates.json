@@ -1,0 +1,8 @@
+{
+	"npmEnvironments": {
+		"NPM_SECRET": "${secret}",
+		"NPM_LICENSE_TABLE": "${project}-licenses-${stage}",
+		"NPM_PACKAGE_TABLE": "${project}-packages-${stage}",
+		"NPM_PACKAGE_BUCKET": "${project}-packages-${stage}"
+	}
+}
