@@ -45,7 +45,7 @@
 							"Action": [
 								"*"
 							],
-							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-licenses-${stage}"
+							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-users-${stage}"
 						},
 						{
 							"Effect": "Allow",
@@ -70,10 +70,11 @@
 				]
 			}
 		},
-		"DynamoDBTableLicense": {
+		"DynamoDBTableUser": {
 			"Type": "AWS::DynamoDB::Table",
+			"DeletionPolicy": "Retain",
 			"Properties": {
-				"TableName": "${project}-licenses-${stage}",
+				"TableName": "${project}-users-${stage}",
 				"AttributeDefinitions": [
 					{
 						"AttributeName": "name",
@@ -94,6 +95,7 @@
 		},
 		"DynamoDBTablePackage": {
 			"Type": "AWS::DynamoDB::Table",
+			"DeletionPolicy": "Retain",
 			"Properties": {
 				"TableName": "${project}-packages-${stage}",
 				"AttributeDefinitions": [
@@ -116,6 +118,7 @@
 		},
 		"S3BucketPackage": {
 			"Type": "AWS::S3::Bucket",
+			"DeletionPolicy": "Retain",
 			"Properties": {
 				"BucketName": "${project}-packages-${stage}",
 				"AccessControl": "Private"

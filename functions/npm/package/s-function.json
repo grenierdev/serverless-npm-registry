@@ -1,19 +1,19 @@
 {
-	"name": "user",
+	"name": "package",
 	"runtime": "nodejs4.3",
 	"description": "Serverless Lambda function for project: serverless-private-npm",
 	"customName": false,
 	"customRole": false,
-	"handler": "npm/user/handler.handler",
+	"handler": "npm/package/handler.handler",
 	"timeout": 6,
-	"memorySize": 512,
+	"memorySize": 1024,
 	"authorizer": {},
 	"custom": {
 		"excludePatterns": []
 	},
 	"endpoints": [
 		{
-			"path": "/-/whoami",
+			"path": "/-/all/since",
 			"method": "GET",
 			"type": "AWS",
 			"authorizationType": "none",
@@ -23,16 +23,12 @@
 			"requestTemplates": {
 				"application/json": {
 					"method": "$context.httpMethod",
-					"path": "$context.resourcePath",
-					"authorization": "$input.params().header.Authorization"
+					"path": "$context.resourcePath"
 				}
 			},
 			"responses": {
-				".*You need to login.*": {
-					"statusCode": "401",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
+				"400": {
+					"statusCode": "400"
 				},
 				"default": {
 					"statusCode": "200",
@@ -45,7 +41,7 @@
 			}
 		},
 		{
-			"path": "/-/user/{name}",
+			"path": "/-/all",
 			"method": "GET",
 			"type": "AWS",
 			"authorizationType": "none",
@@ -55,16 +51,12 @@
 			"requestTemplates": {
 				"application/json": {
 					"method": "$context.httpMethod",
-					"path": "$context.resourcePath",
-					"name": "$input.params('name')"
+					"path": "$context.resourcePath"
 				}
 			},
 			"responses": {
-				"User .* does not exists.": {
-					"statusCode": "404",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
+				"400": {
+					"statusCode": "400"
 				},
 				"default": {
 					"statusCode": "200",
@@ -77,7 +69,37 @@
 			}
 		},
 		{
-			"path": "/-/user/{name}",
+			"path": "/{package}",
+			"method": "GET",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": {
+					"method": "$context.httpMethod",
+					"path": "$context.resourcePath",
+					"package": "$input.params('package')",
+					"authorization": "$input.params('Authorization')"
+				}
+			},
+			"responses": {
+				"400": {
+					"statusCode": "400"
+				},
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
+		},
+		{
+			"path": "/{package}",
 			"method": "PUT",
 			"type": "AWS",
 			"authorizationType": "none",
@@ -88,25 +110,16 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
-					"name": "$input.params('name')",
-					"body" : "$input.json('$')"
+					"package": "$input.params('package')",
+					"body" : ""
 				}
 			},
 			"responses": {
-				".*User was not provided.*": {
-					"statusCode": "400",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
-				},
-				".*does not exists or password mismatch.*": {
-					"statusCode": "409",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
+				"400": {
+					"statusCode": "400"
 				},
 				"default": {
-					"statusCode": "201",
+					"statusCode": "200",
 					"responseParameters": {},
 					"responseModels": {},
 					"responseTemplates": {
@@ -116,8 +129,8 @@
 			}
 		},
 		{
-			"path": "/-/user/{name}/-rev/{revision}",
-			"method": "PUT",
+			"path": "/{package}/-/{tarball}",
+			"method": "GET",
 			"type": "AWS",
 			"authorizationType": "none",
 			"authorizerFunction": false,
@@ -127,26 +140,16 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
-					"name": "$input.params('name')",
-					"revision": "$input.params('revision')",
-					"body" : "$input.json('$')"
+					"package": "$input.params('package')",
+					"tarball": "$input.params('tarball')"
 				}
 			},
 			"responses": {
-				".*User was not provided.*": {
-					"statusCode": "400",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
-				},
-				".*does not exists or password mismatch.*": {
-					"statusCode": "409",
-					"responseTemplates": {
-						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
-					}
+				"400": {
+					"statusCode": "400"
 				},
 				"default": {
-					"statusCode": "201",
+					"statusCode": "200",
 					"responseParameters": {},
 					"responseModels": {},
 					"responseTemplates": {
@@ -156,7 +159,7 @@
 			}
 		},
 		{
-			"path": "/-/user/token/{token}",
+			"path": "/{package}/-rev/{revision}",
 			"method": "DELETE",
 			"type": "AWS",
 			"authorizationType": "none",
@@ -167,7 +170,8 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
-					"token": "$input.params('token')"
+					"package": "$input.params('package')",
+					"revision": "$input.params('revision')"
 				}
 			},
 			"responses": {
