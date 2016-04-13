@@ -43,23 +43,35 @@
 						{
 							"Effect": "Allow",
 							"Action": [
-								"*"
+								"dynamodb:GetItem",
+								"dynamodb:PutItem",
+								"dynamodb:Query",
+								"dynamodb:UpdateItem",
+								"dynamodb:DeleteItem"
 							],
 							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-users-${stage}"
 						},
 						{
 							"Effect": "Allow",
 							"Action": [
-								"*"
+								"dynamodb:GetItem",
+								"dynamodb:PutItem",
+								"dynamodb:Query",
+								"dynamodb:UpdateItem",
+								"dynamodb:DeleteItem"
 							],
 							"Resource": "arn:aws:dynamodb:${region}:*:table/${project}-packages-${stage}"
 						},
 						{
 							"Effect": "Allow",
 							"Action": [
-								"*"
+								"s3:DeleteObject",
+								"s3:GetObject",
+								"s3:PutObject",
+								"s3:AbortMultipartUpload",
+								"s3:ListMultipartUploadParts"
 							],
-							"Resource": "arn:aws:s3:::${project}-packages-${stage}"
+							"Resource": "arn:aws:s3:::${project}-packages-${stage}/*"
 						}
 					]
 				},

@@ -5,8 +5,8 @@
 	"customName": false,
 	"customRole": false,
 	"handler": "npm/user/handler.handler",
-	"timeout": 6,
-	"memorySize": 512,
+	"timeout": 60,
+	"memorySize": 1024,
 	"authorizer": {},
 	"custom": {
 		"excludePatterns": []
@@ -171,9 +171,6 @@
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
-				},
 				"default": {
 					"statusCode": "200",
 					"responseParameters": {},

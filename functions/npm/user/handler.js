@@ -3,7 +3,6 @@
 var Storage = require('../lib/Storage')();
 
 module.exports.handler = function(event, context) {
-	console.log('Request', event);
 
 	var url = `${event.path}~${event.method}`;
 	switch (url) {
@@ -17,11 +16,15 @@ module.exports.handler = function(event, context) {
 						});
 					})
 					.catch(err => {
-						console.log(`Err ${err.stack}`);
 						context.fail(JSON.stringify({
-							error: `You need to login to "access" this registry.`
+							error: `You need to login to access this registry.`
 						}));
 					});
+			}
+			else {
+				context.fail(JSON.stringify({
+					error: `You need to login to access this registry.`
+				}));
 			}
 
 			break;
@@ -87,6 +90,11 @@ module.exports.handler = function(event, context) {
 			}
 
 			break;
+
+		case '/-/user/token/{token}~DELETE':
+			return context.done(null, {
+				ok: 'logged out'
+			});
 
 		default:
 			return context.done(null, {

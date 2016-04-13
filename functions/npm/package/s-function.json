@@ -23,12 +23,27 @@
 			"requestTemplates": {
 				"application/json": {
 					"method": "$context.httpMethod",
-					"path": "$context.resourcePath"
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
+					"stale": "$input.params().querystring.get('stale')",
+					"startkey": "$input.params().querystring.get('startkey')"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"https?://.*": {
+					"statusCode": "301",
+					"responseParameters": {
+						"method.response.header.Location": "integration.response.body.errorMessage"
+					},
+					"responseTemplates": {
+						"application/json": ""
+					}
 				},
 				"default": {
 					"statusCode": "200",
@@ -51,16 +66,28 @@
 			"requestTemplates": {
 				"application/json": {
 					"method": "$context.httpMethod",
-					"path": "$context.resourcePath"
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"https?://.*": {
+					"statusCode": "301",
+					"responseParameters": {
+						"method.response.header.Location": "integration.response.body.errorMessage"
+					},
+					"responseTemplates": {
+						"application/json": ""
+					}
 				},
 				"default": {
 					"statusCode": "200",
-					"responseParameters": {},
 					"responseModels": {},
 					"responseTemplates": {
 						"application/json": ""
@@ -80,13 +107,26 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
 					"package": "$input.params('package')",
 					"authorization": "$input.params('Authorization')"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"https?://.*": {
+					"statusCode": "301",
+					"responseParameters": {
+						"method.response.header.Location": "integration.response.body.errorMessage"
+					},
+					"responseTemplates": {
+						"application/json": ""
+					}
 				},
 				"default": {
 					"statusCode": "200",
@@ -110,13 +150,23 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
 					"package": "$input.params('package')",
-					"body" : ""
+					"body" : "$input.json('$')"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
 				},
 				"default": {
 					"statusCode": "200",
@@ -140,13 +190,72 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
 					"package": "$input.params('package')",
 					"tarball": "$input.params('tarball')"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"https?://.*": {
+					"statusCode": "301",
+					"responseParameters": {
+						"method.response.header.Location": "integration.response.body.errorMessage"
+					},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				},
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
+		},
+		{
+			"path": "/{package}/-rev/{revision}",
+			"method": "PUT",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": {
+					"method": "$context.httpMethod",
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
+					"package": "$input.params('package')",
+					"revision": "$input.params('revision')"
+				}
+			},
+			"responses": {
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
 				},
 				"default": {
 					"statusCode": "200",
@@ -170,13 +279,23 @@
 				"application/json": {
 					"method": "$context.httpMethod",
 					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
 					"package": "$input.params('package')",
 					"revision": "$input.params('revision')"
 				}
 			},
 			"responses": {
-				"400": {
-					"statusCode": "400"
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
 				},
 				"default": {
 					"statusCode": "200",

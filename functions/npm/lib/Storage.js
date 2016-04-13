@@ -47,6 +47,68 @@ module.exports = function () {
 			return encryptString(password) == this.password;
 		}
 
+		canRead (pkg) {
+			// TODO is expired ?
+			return this.access.indexOf(pkg) > -1 || this.canWrite(pkg);
+		}
+
+		canWrite (pkg) {
+			// TODO is expired ?
+			return this.canPerform('publish') && this.owner.indexOf(pkg) > -1;
+		}
+
+		canPerform (action) {
+			// TODO is expired ?
+			return this.permission.indexOf(action) > -1;
+		}
+
+		grantRead (pkg) {
+			if (!this.canRead(pkg)) {
+				this.access.push(pkg);
+			}
+			return this.update();
+		}
+
+		grantWrite (pkg) {
+			if (!this.canWrite(pkg)) {
+				this.owner.push(pkg);
+			}
+			return this.update();
+		}
+
+		update () {
+			return new Promise((resolve, reject) => {
+				DynamoDB.updateItem({
+					TableName: process.env.NPM_USER_TABLE,
+					Key: {
+						name: {
+							S: this.name
+						}
+					},
+					UpdateExpression: 'SET #password = :password, #expire = :expire, #permission = :permission, #access = :access, #owner = :owner',
+					ExpressionAttributeNames: {
+						'#password': 'password',
+						'#expire': 'expire',
+						'#permission': 'permission',
+						'#access': 'access',
+						'#owner': 'owner'
+					},
+					ExpressionAttributeValues: {
+						':password': {S: this.password},
+						':expire': {S: this.expire},
+						':permission': {L: this.permission.map(pkg => { return {S: pkg}; })},
+						':access': {L: this.access.map(pkg => { return {S: pkg}; })},
+						':owner': {L: this.owner.map(pkg => { return {S: pkg}; })}
+					}
+				}, (err, data) => {
+					if (err) {
+						return reject(err);
+					}
+					return resolve(this);
+				});
+			});
+		}
+
 		static fetchByToken (token) {
 			try {
 				token = token.match(/^(Bearer) (.*)$/)[2];
@@ -138,6 +200,47 @@ module.exports = function () {
 			}
 		}
 
+		unpublish (revision) {
+			var tasks = [];
+			Object.keys(this.info.versions).forEach(ver => {
+				if (revision && revision != ver) {
+					return;
+				}
+
+				var meta = this.info.versions[ver];
+
+				if (meta.dist) {
+					tasks.push(new Promise((resolve, reject) => {
+						var file = Path.basename(meta.dist.tarball);
+						S3.deleteObject({
+							Bucket: process.env.NPM_PACKAGE_BUCKET,
+							Key: file
+						}, (err, data) => {
+							if (err) {
+								return reject(err);
+							}
+							return resolve();
+						})
+					}));
+				}
+			})
+			tasks.push(new Promise((resolve, reject) => {
+				DynamoDB.deleteItem({
+					TableName: process.env.NPM_PACKAGE_TABLE,
+					Key: {
+						name: {S: this.name}
+					}
+				}, (err, data) => {
+					if (err) {
+						return reject(err);
+					}
+					resolve(this);
+				})
+			}));
+
+			return Promise.all(tasks);
+		}
+
 		static fetchByName (name) {
 			return new Promise((resolve, reject) => {
 				DynamoDB.getItem({
@@ -204,14 +307,15 @@ module.exports = function () {
 			});
 		}
 
-		static create (info) {
-			info = Object.assign(this, {
+		static create (info, attachments) {
+			info = Object.assign({}, {
 				name: '',
-				info: '',
-				attachments: []
+				info: ''
 			}, info);
 
 			info.info = JSON.stringify(info.info);
+
+			attachments = attachments || [];
 
 			return new Promise((resolve, reject) => {
 				DynamoDB.putItem({
@@ -226,7 +330,7 @@ module.exports = function () {
 					}
 
 					var uploads = [];
-					Object.keys(info.attachments).forEach(file => {
+					Object.keys(attachments).forEach(file => {
 						var meta = attachments[file];
 
 						uploads.push(new Promise((resolve, reject) => {
@@ -250,8 +354,8 @@ module.exports = function () {
 					Promise.all(uploads)
 						.then(results => {
 							resolve(new Package({
-								name: data.name,
-								info: data.info
+								name: info.name,
+								info: info.info
 							}));
 						})
 						.catch(err => {
@@ -262,9 +366,18 @@ module.exports = function () {
 		}
 
 		static getDownloadUrl (file) {
-			new Promise((resolve, reject) => {
+			return new Promise((resolve, reject) => {
 
-				reject(new Error('Not implemented'));
+				S3.getSignedUrl('getObject', {
+					Bucket: process.env.NPM_PACKAGE_BUCKET,
+					Key: file,
+					Expires: 60
+				}, (err, url) => {
+					if (err) {
+						return reject(err);
+					}
+					return resolve(url);
+				});
 			});
 		}
 	}
