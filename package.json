@@ -4,7 +4,7 @@
   "description": "A Serverless Project and its Serverless Plugin dependencies.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sinapsio/serverless-private-npm.git"
+    "url": "git+https://bitbucket.org/sinapsio/serverless-private-npm.git"
   },
   "keywords": [
     "serverless",
@@ -14,8 +14,8 @@
   "author": "Michael Grenier <michael.grenier@live.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sinapsio/serverless-private-npm/issues"
+    "url": "https://bitbucket.org/sinapsio/serverless-private-npm/issues"
   },
-  "homepage": "https://github.com/sinapsio/serverless-private-npm#readme",
+  "homepage": "https://bitbucket.org/sinapsio/serverless-private-npm",
   "dependencies": {}
 }
