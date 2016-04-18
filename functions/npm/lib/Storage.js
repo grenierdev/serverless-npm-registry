@@ -223,22 +223,53 @@ module.exports = function () {
 						})
 					}));
 				}
-			})
-			tasks.push(new Promise((resolve, reject) => {
-				DynamoDB.deleteItem({
+			});
+
+			if (revision) {
+				delete this.info.versions[revision];
+				tasks.push(this.update());
+			} else {
+				tasks.push(new Promise((resolve, reject) => {
+					DynamoDB.deleteItem({
+						TableName: process.env.NPM_PACKAGE_TABLE,
+						Key: {
+							name: {S: this.name}
+						}
+					}, (err, data) => {
+						if (err) {
+							return reject(err);
+						}
+						resolve(this);
+					})
+				}));
+			}
+
+			return Promise.all(tasks);
+		}
+
+		update () {
+			return new Promise((resolve, reject) => {
+				DynamoDB.updateItem({
 					TableName: process.env.NPM_PACKAGE_TABLE,
 					Key: {
-						name: {S: this.name}
+						name: {
+							S: this.name
+						}
+					},
+					UpdateExpression: 'SET #info = :info',
+					ExpressionAttributeNames: {
+						'#info': 'info'
+					},
+					ExpressionAttributeValues: {
+						':info': {S: JSON.stringify(this.info)}
 					}
 				}, (err, data) => {
 					if (err) {
 						return reject(err);
 					}
-					resolve(this);
-				})
-			}));
-
-			return Promise.all(tasks);
+					return resolve(this);
+				});
+			});
 		}
 
 		static fetchByName (name) {

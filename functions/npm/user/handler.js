@@ -6,6 +6,8 @@ module.exports.handler = function(event, context) {
 
 	var url = `${event.path}~${event.method}`;
 	switch (url) {
+
+		// npm whoami
 		case '/-/whoami~GET':
 
 			if (event.authorization) {
@@ -29,6 +31,7 @@ module.exports.handler = function(event, context) {
 
 			break;
 
+		// npm ???
 		case '/-/user/{name}~GET':
 			if (event.name.match(/^org\.couchdb\.user:/)) {
 				var name = event.name.replace(/^org\.couchdb\.user:/, '');
@@ -49,12 +52,13 @@ module.exports.handler = function(event, context) {
 			}
 			else {
 				context.fail(JSON.stringify({
-					error: `Not implemented, need header authorization.`
+					error: `Bad request.`
 				}));
 			}
 
 			break;
 
+		// npm login
 		case '/-/user/{name}/-rev/{revision}~PUT':
 		case '/-/user/{name}~PUT':
 			if (event.name.match(/^org\.couchdb\.user:/)) {
@@ -91,6 +95,7 @@ module.exports.handler = function(event, context) {
 
 			break;
 
+		// npm logout
 		case '/-/user/token/{token}~DELETE':
 			return context.done(null, {
 				ok: 'logged out'

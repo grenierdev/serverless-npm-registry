@@ -11,14 +11,17 @@ module.exports.handler = function(event, context) {
 
 				var url = `${event.path}~${event.method}`;
 				switch (url) {
+					// npm search {package}
 					case '/-/all/since~GET':
 						context.fail(`https://registry.npmjs.org/-/all/since?stale=${event.stale}&startkey=${event.startkey}`);
 						break;
 
+					// npm search {package}
 					case '/-/all~GET':
 						context.fail(`https://registry.npmjs.org/-/all`);
 						break;
 
+					// npm info {package}
 					case '/{package}~GET':
 						Storage.Package.fetchByName(event.package)
 							.then(pkg => {
@@ -36,6 +39,7 @@ module.exports.handler = function(event, context) {
 							})
 						break;
 
+					// npm publish
 					case '/{package}~PUT':
 						var info = event.body;
 						var attachments = info._attachments;
@@ -87,6 +91,10 @@ module.exports.handler = function(event, context) {
 
 						break;
 
+					// TODO npm publish [...] --tag {tag} https://docs.npmjs.com/cli/publish && https://github.com/rlidwka/sinopia/blob/master/lib/index-api.js#L279
+					// TODO npm publish tarball.gz [...] https://docs.npmjs.com/cli/publish
+
+					// npm install {package}
 					case '/{package}/-/{tarball}~GET':
 						Storage.Package.fetchByName(event.package)
 							.then(pkg => {
@@ -111,15 +119,69 @@ module.exports.handler = function(event, context) {
 							});
 						break;
 
-					// TODO dist-tags https://github.com/rlidwka/sinopia/blob/master/lib/index-api.js#L218
+					// npm dist-tag ls {package}
+					case '/-/package/{package}/dist-tags~GET':
+						Storage.Package.fetchByName(event.package)
+							.then(pkg => {
+								if (user.canWrite(pkg.name) == false) {
+									throw new Error(`User can not access this package.`);
+								}
 
-					// TODO revision https://github.com/rlidwka/sinopia/blob/master/lib/index-api.js#L279
-					case '/{package}/-rev/{revision}~PUT':
-						return context.fail(JSON.stringify({
-							error: `Bad request.`
-						}));
+								return context.done(null, pkg.info['dist-tags']);
+							})
+							.catch(err => {
+								context.fail(JSON.stringify({
+									error: `You need to login to access this access this package.`
+								}));
+							});
 						break;
 
+					// npm dist-tag add {package}@{version} {tag}
+					case '/-/package/{package}/dist-tags/{tag}~PUT':
+						Storage.Package.fetchByName(event.package)
+							.then(pkg => {
+								if (user.canWrite(pkg.name) == false) {
+									throw new Error(`User can not access this package.`);
+								}
+
+								pkg.info['dist-tags'][event.tag] = event.version;
+
+								return pkg.update();
+							})
+							.then(pkg => {
+								return context.done(null, { ok: 'Tags updated.' });
+							})
+							.catch(err => {
+								context.fail(JSON.stringify({
+									error: `You need to login to access this access this package.`
+								}));
+							});
+						break;
+
+					// npm dist-tag rm {package} {tag}
+					case '/-/package/{package}/dist-tags/{tag}~DELETE':
+						Storage.Package.fetchByName(event.package)
+							.then(pkg => {
+								if (user.canWrite(pkg.name) == false) {
+									throw new Error(`User can not access this package.`);
+								}
+
+								delete pkg.info['dist-tags'][event.tag];
+
+								return pkg.update();
+							})
+							.then(pkg => {
+								return context.done(null, { ok: 'Tags removed.' });
+							})
+							.catch(err => {
+								context.fail(JSON.stringify({
+									error: `You need to login to access this access this package.`
+								}));
+							});
+						break;
+
+					// npm unpublish {package}
+					// npm unpublish {package}@{version}
 					case '/{package}/-rev/{revision}~DELETE':
 						Storage.Package.fetchByName(event.package)
 							.then(pkg => {
@@ -145,6 +207,13 @@ module.exports.handler = function(event, context) {
 								}));
 							});
 						break;
+
+					// TODO (ignored) npm access https://docs.npmjs.com/cli/access
+					// TODO npm deprecate https://docs.npmjs.com/cli/deprecate
+					// TODO (ignored) npm owner https://docs.npmjs.com/cli/owner
+					// TODO npm ping https://docs.npmjs.com/cli/ping
+					// TODO (ignored) npm star/unstar https://docs.npmjs.com/cli/star
+					// TODO (ignored) npm team https://docs.npmjs.com/cli/team
 
 					default:
 						return context.done(null, {

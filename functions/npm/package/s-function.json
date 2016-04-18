@@ -306,6 +306,126 @@
 					}
 				}
 			}
+		},
+		{
+			"path": "/-/package/{package}/dist-tags",
+			"method": "GET",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": {
+					"method": "$context.httpMethod",
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
+					"package": "$input.params('package')"
+				}
+			},
+			"responses": {
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
+		},
+		{
+			"path": "/-/package/{package}/dist-tags/{tag}",
+			"method": "PUT",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": {
+					"method": "$context.httpMethod",
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
+					"package": "$input.params('package')",
+					"tag": "$input.params('tag')",
+					"version" : "$input.json('$')"
+				}
+			},
+			"responses": {
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
+		},
+		{
+			"path": "/-/package/{package}/dist-tags/{tag}",
+			"method": "DELETE",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": {
+					"method": "$context.httpMethod",
+					"path": "$context.resourcePath",
+					"authorization": "$input.params().header.Authorization",
+					"package": "$input.params('package')",
+					"tag": "$input.params('tag')"
+				}
+			},
+			"responses": {
+				".*You need to login.*": {
+					"statusCode": "401",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				".*Bad request.*": {
+					"statusCode": "400",
+					"responseTemplates": {
+						"application/json": "#set ($error = $util.parseJson($input.path('$.errorMessage'))) { \"error\": \"$util.escapeJavaScript($error.error)\" }"
+					}
+				},
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
 		}
 	],
 	"events": [],
