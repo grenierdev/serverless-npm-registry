@@ -208,12 +208,7 @@ module.exports.handler = function(event, context) {
 							});
 						break;
 
-					// TODO (ignored) npm access https://docs.npmjs.com/cli/access
 					// TODO npm deprecate https://docs.npmjs.com/cli/deprecate
-					// TODO (ignored) npm owner https://docs.npmjs.com/cli/owner
-					// TODO npm ping https://docs.npmjs.com/cli/ping
-					// TODO (ignored) npm star/unstar https://docs.npmjs.com/cli/star
-					// TODO (ignored) npm team https://docs.npmjs.com/cli/team
 
 					default:
 						return context.done(null, {
