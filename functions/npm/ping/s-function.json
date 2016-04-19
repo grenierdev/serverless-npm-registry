@@ -1,0 +1,44 @@
+{
+	"name": "ping",
+	"runtime": "nodejs4.3",
+	"description": "Serverless Lambda function for project: serverless-private-npm",
+	"customName": false,
+	"customRole": false,
+	"handler": "handler.handler",
+	"timeout": 6,
+	"memorySize": 1024,
+	"authorizer": {},
+	"custom": {
+		"excludePatterns": []
+	},
+	"endpoints": [
+		{
+			"path": "/-/ping",
+			"method": "GET",
+			"type": "AWS",
+			"authorizationType": "none",
+			"authorizerFunction": false,
+			"apiKeyRequired": false,
+			"requestParameters": {},
+			"requestTemplates": {
+				"application/json": ""
+			},
+			"responses": {
+				"default": {
+					"statusCode": "200",
+					"responseParameters": {},
+					"responseModels": {},
+					"responseTemplates": {
+						"application/json": ""
+					}
+				}
+			}
+		}
+	],
+	"events": [],
+	"environment": "$${npmEnvironments}",
+	"vpc": {
+		"securityGroupIds": [],
+		"subnetIds": []
+	}
+}
